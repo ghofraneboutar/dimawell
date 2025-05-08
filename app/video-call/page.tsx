@@ -1,4 +1,6 @@
 import VideoCallClient from "@/components/video-call/video-call-client"
+import AuthGuard from "@/components/auth-guard"
+import DashboardLayout from "@/components/dashboard-layout"
 
 export default function VideoCallPage() {
   // Dans une application réelle, ces informations viendraient de la base de données
@@ -13,13 +15,17 @@ export default function VideoCallPage() {
   }
 
   return (
-    <VideoCallClient
-      sessionId={sessionData.sessionId}
-      psychologistId={sessionData.psychologistId}
-      psychologistName={sessionData.psychologistName}
-      psychologistInitials={sessionData.psychologistInitials}
-      studentName={sessionData.studentName}
-      studentInitials={sessionData.studentInitials}
-    />
+    <AuthGuard>
+      <DashboardLayout>
+        <VideoCallClient
+          sessionId={sessionData.sessionId}
+          psychologistId={sessionData.psychologistId}
+          psychologistName={sessionData.psychologistName}
+          psychologistInitials={sessionData.psychologistInitials}
+          studentName={sessionData.studentName}
+          studentInitials={sessionData.studentInitials}
+        />
+      </DashboardLayout>
+    </AuthGuard>
   )
 }

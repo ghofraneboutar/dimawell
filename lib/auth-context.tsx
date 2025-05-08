@@ -75,11 +75,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token])
 
+  // Modifier la fonction login pour stocker les informations de manière permanente
   const login = (newToken: string, newUser: User) => {
+    // S'assurer que le dashboardPath est défini avec la casse correcte
+    if (!newUser.dashboardPath) {
+      // Utiliser la casse correcte pour le chemin du dashboard étudiant (D majuscule)
+      newUser.dashboardPath = newUser.role === "student" ? "/student/Dashboard" : "/psychologist/dashboard"
+    } else {
+      // Normaliser le chemin pour s'assurer qu'il utilise la bonne casse
+      if (newUser.role === "student" && newUser.dashboardPath.toLowerCase() === "/student/dashboard") {
+        newUser.dashboardPath = "/student/Dashboard" // Avec D majuscule
+      }
+    }
+
     setToken(newToken)
     setUser(newUser)
+
+    // Stocker les informations de manière permanente (sans expiration)
     localStorage.setItem("token", newToken)
     localStorage.setItem("user", JSON.stringify(newUser))
+
+    // Ajouter des logs pour le débogage
+    console.log("User logged in:", newUser)
+    console.log("Dashboard path:", newUser.dashboardPath)
   }
 
   const logout = () => {
@@ -87,7 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     localStorage.removeItem("token")
     localStorage.removeItem("user")
-    router.push("/login")
+    console.log("User logged out, redirecting to home page")
+    router.push("/")
   }
 
   const value = {

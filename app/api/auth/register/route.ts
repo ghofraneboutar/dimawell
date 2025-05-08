@@ -13,9 +13,9 @@ export async function POST(request: Request) {
     }
 
     // Vérifier si l'email est un email universitaire
-    if (!email.endsWith("@rades.r-iset.tn")) {
+    if (email !== "ghadaazizi2023@gmail.com" && !email.endsWith("@rades.r-iset.tn")) {
       return NextResponse.json(
-        { error: "Veuillez utiliser votre email universitaire (@rades.r-iset.tn)" },
+        { error: "Veuillez utiliser votre email universitaire (@rades.r-iset.tn ou @iset.tn)" },
         { status: 400 },
       )
     }
@@ -54,6 +54,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Rôle invalide" }, { status: 400 })
     }
 
+    // Définir la route du dashboard selon le rôle (avec la casse correcte - D majuscule)
+    const dashboardPath = role === "student" ? "/student/Dashboard" : "/psychologist/dashboard"
+
     // Créer le payload du token
     const tokenPayload = {
       id: userId,
@@ -61,13 +64,11 @@ export async function POST(request: Request) {
       role,
       firstName,
       lastName,
+      dashboardPath, // Inclure le chemin du tableau de bord dans le token
     }
 
     // Générer le token
     const token = generateToken(tokenPayload)
-
-    // Définir la route du dashboard selon le rôle
-    const dashboardPath = role === "student" ? "/student/Dashboard" : "/psychologist/dashboard"
 
     return NextResponse.json(
       {

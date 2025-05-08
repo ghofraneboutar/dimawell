@@ -21,6 +21,12 @@ export default function LoginPage() {
     setError("")
 
     try {
+      // Valider l'email pour les étudiants uniquement
+      const isStudentEmail = email !== "ghadaazizi2023@gmail.com" // Considérer tout email non spécifique comme étudiant
+      if (isStudentEmail && !email.endsWith("@rades.r-iset.tn")) {
+        throw new Error("Les étudiants doivent utiliser un email universitaire (@rades.r-iset.tn)")
+      }
+
       console.log("Tentative de connexion avec:", email)
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -40,12 +46,17 @@ export default function LoginPage() {
       // Stocker le token et les informations utilisateur
       login(data.token, data.user)
 
-      // Rediriger vers le tableau de bord approprié
-      console.log("Redirection vers:", data.user.dashboardPath)
+      // Déterminer le chemin de redirection
+      let dashboardPath
+      if (email === "ghadaazizi2023@gmail.com") {
+        dashboardPath = "/psychologist/dashboard"
+      } else {
+        dashboardPath =
+          data.user.dashboardPath ||
+          (data.user.role === "student" ? "/student/Dashboard" : "/psychologist/dashboard")
+      }
 
-      // S'assurer que le dashboardPath est défini
-      const dashboardPath =
-        data.user.dashboardPath || (data.user.role === "student" ? "/student/Dashboard" : "/psychologist/dashboard")
+      console.log("Redirection vers:", dashboardPath)
 
       // Ajouter un délai pour s'assurer que le localStorage est mis à jour
       setTimeout(() => {
@@ -79,16 +90,16 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email universitaire
+              Email
             </label>
             <input
               id="email"
               name="email"
-              type="email"
+              type="text" // Changé de "email" à "text" pour permettre des emails non standards
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="prenom.nom@rades.r-iset.tn"
+              placeholder="prenom.nom@rades.r-iset.tn ou email psychologue"
               required
             />
           </div>
@@ -149,4 +160,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

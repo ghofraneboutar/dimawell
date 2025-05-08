@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -34,18 +33,31 @@ export default function RegisterPage() {
     setLoading(true)
     setError("")
 
-    // Vérifier que les mots de passe correspondent
+    const cleanedEmail = formData.email.trim().toLowerCase()
+    const isPsychologistEmail = cleanedEmail === "ghadaazizi2023@gmail.com"
+
+    // Log pour déboguer
+    console.log("Email saisi :", cleanedEmail)
+    console.log("isPsychologistEmail :", isPsychologistEmail)
+
     if (formData.password !== formData.confirmPassword) {
       setError("Les mots de passe ne correspondent pas")
       setLoading(false)
       return
     }
 
-    // Vérifier que l'email est un email universitaire
-    if (!formData.email.endsWith("@rades.r-iset.tn")) {
-      setError("Veuillez utiliser votre email universitaire (@rades.r-iset.tn)")
+    if (!isPsychologistEmail && !cleanedEmail.endsWith("@rades.r-iset.tn")) {
+      setError("Veuillez utiliser votre email universitaire (@rades.r-iset.tn) ou l'email ghadaazizi2023@gmail.com")
       setLoading(false)
       return
+    }
+
+    if (!isPsychologistEmail) {
+      if (!formData.studentId || !formData.department || !formData.yearOfStudy) {
+        setError("Tous les champs étudiant sont requis")
+        setLoading(false)
+        return
+      }
     }
 
     try {
@@ -57,11 +69,12 @@ export default function RegisterPage() {
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
-          email: formData.email,
+          email: cleanedEmail,
           password: formData.password,
+          role: isPsychologistEmail ? "psychologist" : "student",
           studentId: formData.studentId,
           department: formData.department,
-          yearOfStudy: Number.parseInt(formData.yearOfStudy),
+          yearOfStudy: formData.yearOfStudy ? Number.parseInt(formData.yearOfStudy) : undefined,
         }),
       })
 
@@ -71,17 +84,18 @@ export default function RegisterPage() {
         throw new Error(data.error || "Erreur lors de l'inscription")
       }
 
-      // Stocker le token et les informations utilisateur
       login(data.token, data.user)
 
-      // Rediriger vers le tableau de bord étudiant
-      router.push("/dashboard")
+      const dashboardPath = isPsychologistEmail ? "/psychologist/dashboard" : "/student/Dashboard"
+      router.push(dashboardPath)
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
   }
+
+  const isPsychologistEmail = formData.email.trim().toLowerCase() === "ghadaazizi2023@gmail.com"
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12">
@@ -98,136 +112,130 @@ export default function RegisterPage() {
           <p className="text-gray-600 mt-2">Créez votre compte pour accéder aux services de soutien psychologique</p>
         </div>
 
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                Prénom
-              </label>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
               <input
                 id="firstName"
                 name="firstName"
                 type="text"
                 value={formData.firstName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                Nom
-              </label>
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
               <input
                 id="lastName"
                 name="lastName"
                 type="text"
                 value={formData.lastName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email universitaire
-            </label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               id="email"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="prenom.nom@iset.tn"
               required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder={isPsychologistEmail ? "ghadaazizi2023@gmail.com" : "prenom.nom@rades.r-iset.tn"}
             />
-            <p className="text-xs text-gray-500 mt-1">Utilisez votre email universitaire (@iset.tn)</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {isPsychologistEmail
+                ? "Email autorisé : ghadaazizi2023@gmail.com"
+                : "Utilisez votre email universitaire (@rades.r-iset.tn)"}
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Mot de passe
-              </label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirmer
-              </label>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirmer</label>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </div>
 
-          <div>
-            <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1">
-              Numéro d'étudiant
-            </label>
-            <input
-              id="studentId"
-              name="studentId"
-              type="text"
-              value={formData.studentId}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
+          {!isPsychologistEmail && (
+            <>
+              <div>
+                <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1">Numéro d'étudiant</label>
+                <input
+                  id="studentId"
+                  name="studentId"
+                  type="text"
+                  value={formData.studentId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
 
-          <div>
-            <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
-              Département
-            </label>
-            <input
-              id="department"
-              name="department"
-              type="text"
-              value={formData.department}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
+              <div>
+                <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">Département</label>
+                <input
+                  id="department"
+                  name="department"
+                  type="text"
+                  value={formData.department}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
 
-          <div>
-            <label htmlFor="yearOfStudy" className="block text-sm font-medium text-gray-700 mb-1">
-              Année d'étude
-            </label>
-            <select
-              id="yearOfStudy"
-              name="yearOfStudy"
-              value={formData.yearOfStudy}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            >
-              <option value="">Sélectionner</option>
-              <option value="1">1ère année</option>
-              <option value="2">2ème année</option>
-              <option value="3">3ème année</option>
-            </select>
-          </div>
+              <div>
+                <label htmlFor="yearOfStudy" className="block text-sm font-medium text-gray-700 mb-1">Année d'étude</label>
+                <select
+                  id="yearOfStudy"
+                  name="yearOfStudy"
+                  value={formData.yearOfStudy}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="">Sélectionner</option>
+                  <option value="1">1ère année</option>
+                  <option value="2">2ème année</option>
+                  <option value="3">3ème année</option>
+                </select>
+              </div>
+            </>
+          )}
 
           <button
             type="submit"

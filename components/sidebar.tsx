@@ -15,12 +15,13 @@ export default function Sidebar() {
     return pathname === path
   }
 
+  // Modifier les chemins de navigation pour utiliser la casse correcte (D majuscule)
   const navItems = [
     { name: "Tableau de bord", path: "/student/Dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
-    { name: "Messagerie", path: "/messages", icon: <MessageCircle className="h-5 w-5" /> },
-    { name: "Consultation vidéo", path: "/simple-call", icon: <Video className="h-5 w-5" /> },
-    { name: "Suivi de bien-être", path: "/wellbeing", icon: <Heart className="h-5 w-5" /> },
-    { name: "Rendez-vous", path: "/appointments", icon: <Calendar className="h-5 w-5" /> },
+    { name: "Messagerie", path: "/student/messages", icon: <MessageCircle className="h-5 w-5" /> },
+    { name: "Consultation vidéo", path: "/video-call", icon: <Video className="h-5 w-5" /> },
+    { name: "Suivi de bien-être", path: "/student/wellbeing", icon: <Heart className="h-5 w-5" /> },
+    { name: "Rendez-vous", path: "/student/appointments", icon: <Calendar className="h-5 w-5" /> },
     { name: "Paramètres", path: "/settings", icon: <Settings className="h-5 w-5" /> },
   ]
 

@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.message }, { status: 401 })
     }
 
-    // Déterminer le tableau de bord approprié
+    // Déterminer le tableau de bord approprié (avec la casse correcte - D majuscule)
     const dashboardPath = result.user?.role === "psychologist" ? "/psychologist/dashboard" : "/student/Dashboard"
 
     // Retourner le token et les informations utilisateur
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       token: result.token,
       user: {
         ...result.user,
-        dashboardPath,
+        dashboardPath, // S'assurer que le chemin est correct avec D majuscule
       },
     })
   } catch (error) {

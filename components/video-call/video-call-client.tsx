@@ -95,11 +95,17 @@ export default function VideoCallClient({
 
                 <TabsContent value="call" className="mt-0">
                   <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden mb-6">
-                    <iframe
-                      src={googleMeetUrl}
-                      allow="camera; microphone; fullscreen; display-capture; autoplay"
-                      className="w-full h-full"
-                    ></iframe>
+                    {googleMeetUrl ? (
+                      <iframe
+                        src={googleMeetUrl}
+                        allow="camera; microphone; fullscreen; display-capture; autoplay"
+                        className="w-full h-full"
+                      ></iframe>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        Chargement de la vidéoconférence...
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-center space-x-4">

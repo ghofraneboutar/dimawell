@@ -12,10 +12,12 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword)
 }
 
-// Fonction pour générer un token JWT
+// Fonction pour générer un token JWT avec une durée de validité très longue
 export function generateToken(payload: any): string {
   const secret = process.env.JWT_SECRET || "fallback_secret_key_not_secure"
-  return jwt.sign(payload, secret, { expiresIn: "24h" })
+
+  // Utiliser une durée très longue (10 ans) au lieu de 24h
+  return jwt.sign(payload, secret, { expiresIn: "3650d" }) // 10 ans
 }
 
 // Fonction pour vérifier un token JWT
@@ -37,9 +39,9 @@ export async function authenticateUser(email: string, password: string) {
   }
 
   // Vérifier le mot de passe
-  // Pour simplifier, on compare directement les mots de passe
-  // Dans une application réelle, utilisez bcrypt.compare
-  if (user.password !== password) {
+  // Vérifier le mot de passe avec bcrypt
+  const passwordMatch = await verifyPassword(password, user.password)
+  if (!passwordMatch) {
     return { success: false, message: "Email ou mot de passe incorrect" }
   }
 
@@ -57,7 +59,7 @@ export async function authenticateUser(email: string, password: string) {
     }
   }
 
-  // Déterminer le tableau de bord approprié
+  // Déterminer le tableau de bord approprié (avec la casse correcte - D majuscule)
   const dashboardPath = user.role === "psychologist" ? "/psychologist/dashboard" : "/student/Dashboard"
 
   // Créer le payload du token
@@ -117,7 +119,7 @@ export async function validateAuth(authHeader: string | null) {
     return { authenticated: false, message: "Utilisateur non trouvé" }
   }
 
-  // Ajouter le chemin du tableau de bord si ce n'est pas déjà fait
+  // Ajouter le chemin du tableau de bord si ce n'est pas déjà fait (avec la casse correcte - D majuscule)
   if (!decoded.dashboardPath) {
     decoded.dashboardPath = decoded.role === "psychologist" ? "/psychologist/dashboard" : "/student/Dashboard"
   }
